@@ -1,0 +1,67 @@
+
+/* First top 5 the most expensive goods*/
+/*select id, quantity from order_elements 
+ORDER BY quantity
+desc
+limit 5
+*/
+/* Second top 5 the most expensive goods*/
+
+/*
+select id, quantity from order_elements 
+ORDER BY quantity
+desc
+limit 5
+OFFSET 5
+*/
+/*
+select distinct id, comment from orders
+where comment in ('булка сахарная', 'снежок') or id in (50,51,52)
+ORDER BY comment
+LIMIT 10
+*/
+
+--select name from users where name like '%Жанна%'
+
+--select comment from orders where comment is null
+--update orders  set comment = '' where id=1
+--select id, comment from orders where comment=''  
+--update orders  set comment = '' where id < 10  
+
+
+--select avg(quantity) from order_elements
+--select item_id, quantity from order_elements where item_id=87
+
+--select item_id, quantity from order_elements where quantity=1
+--select MIN(quantity) from order_elements
+--select item_id, quantity from order_elements where quantity=1
+
+--select item_id, quantity from order_elements where quantity=100
+--select MAX(quantity) from order_elements
+--select item_id, quantity from order_elements where quantity=100
+
+--select avg(quantity) from order_elements
+
+
+/*select id, status from orders
+order by status desc
+*/
+
+select O.id, O.comment, OE. quantity, U.name from orders as O
+full outer JOIN order_elements as OE ON OE.ID=O.order_elements
+full join users as U on O.user_id=U.id
+
+
+Переименовать таблицу
+
+ALTER TABLE "order" 
+    RENAME TO orders
+
+ALTER TABLE "item" 
+    RENAME TO items
+
+ALTER TABLE "client" 
+    RENAME TO clients
+
+  
+

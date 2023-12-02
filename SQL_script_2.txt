@@ -1,0 +1,839 @@
+/* 
+Рабочий скрипт от Алёны от 2023-11-28
+
+CREATE TABLE "delivery"(
+    "id" BIGINT NOT NULL,
+    "type_delivery" TEXT NOT NULL,
+    "adress_delivery" VARCHAR(255) NOT NULL
+);
+ALTER TABLE
+    "delivery" ADD PRIMARY KEY("id");
+COMMENT
+ON COLUMN
+    "delivery"."type_delivery" IS '1 - самовывоз
+2 - доставка на адрес';
+CREATE TABLE "calls"(
+    "id" BIGINT NOT NULL,
+    "date_call" DATE NOT NULL,
+    "status_call" VARCHAR(255) NOT NULL,
+    "phone_number_call" VARCHAR(255) NOT NULL,
+    "link_audio_rec_call" VARCHAR(255) NOT NULL,
+    "duration_call" DOUBLE PRECISION NOT NULL
+);
+ALTER TABLE
+    "calls" ADD PRIMARY KEY("id");
+CREATE TABLE "site"(
+    "id" BIGINT NOT NULL,
+    "date_create" DATE NOT NULL
+);
+ALTER TABLE
+    "site" ADD PRIMARY KEY("id");
+CREATE TABLE "responsible"(
+    "id" BIGINT NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
+    "post" VARCHAR(255) NOT NULL
+);
+ALTER TABLE
+    "responsible" ADD PRIMARY KEY("id");
+COMMENT
+ON COLUMN
+    "responsible"."post" IS 'должность сотрудника:
+1- менеджер
+2- склад
+3- курьер';
+CREATE TABLE "client"(
+    "id" BIGINT NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
+    "company" VARCHAR(255) NOT NULL,
+    "inn" VARCHAR(255) NOT NULL,
+    "phone_number_client" VARCHAR(255) NOT NULL,
+    "email_client" VARCHAR(255) NOT NULL,
+    "adress_client" VARCHAR(255) NOT NULL
+);
+ALTER TABLE
+    "client" ADD PRIMARY KEY("id");
+CREATE TABLE "letters"(
+    "id" BIGINT NOT NULL,
+    "date_letter" DATE NOT NULL,
+    "status_letter" VARCHAR(255) NOT NULL,
+    "email_letter" VARCHAR(255) NOT NULL,
+    "text_letter" VARCHAR(255) NOT NULL
+);
+ALTER TABLE
+    "letters" ADD PRIMARY KEY("id");
+CREATE TABLE "order_items"(
+    "id" BIGINT NOT NULL,
+    "order_id" BIGINT NOT NULL,
+    "quantity" DOUBLE PRECISION NOT NULL,
+    "items_id" BIGINT NOT NULL
+);
+ALTER TABLE
+    "order_items" ADD PRIMARY KEY("id");
+CREATE TABLE "sms"(
+    "id" BIGINT NOT NULL,
+    "date_sms" DATE NOT NULL,
+    "phone_number_sms" VARCHAR(255) NOT NULL,
+    "text_sms" VARCHAR(255) NOT NULL
+);
+ALTER TABLE
+    "sms" ADD PRIMARY KEY("id");
+CREATE TABLE "item"(
+    "id" BIGINT NOT NULL,
+    "product" VARCHAR(255) NOT NULL,
+    "article" VARCHAR(255) NOT NULL,
+    "dimensions" VARCHAR(255) NOT NULL,
+    "weight" DOUBLE PRECISION NOT NULL,
+    "price" DOUBLE PRECISION NOT NULL
+);
+ALTER TABLE
+    "item" ADD PRIMARY KEY("id");
+CREATE TABLE "order"(
+    "id" BIGINT NOT NULL,
+    "client_id" BIGINT NOT NULL,
+    "date_order" DATE NOT NULL,
+    "status_order" VARCHAR(255) NOT NULL,
+    "order_amount" DOUBLE PRECISION NOT NULL,
+    "payment_type" VARCHAR(255) NOT NULL,
+    "payment_status" VARCHAR(255) NOT NULL,
+    "call_id" BIGINT NOT NULL,
+    "letter_id" BIGINT NOT NULL,
+    "delivery_id" BIGINT NOT NULL,
+    "responsible_id" BIGINT NOT NULL,
+    "sms_id" BIGINT NOT NULL,
+    "site_id" BIGINT NOT NULL
+);
+ALTER TABLE
+    "order" ADD PRIMARY KEY("id");
+COMMENT
+ON COLUMN
+    "order"."status_order" IS '0-Черновик, 1-Подтверждён, 2-Собирается на складе, 3-Сформирован, 4-Подготовлен к самовывозу, 5-Передан в доставку, 6-Отказа от заказа, 7-Отгружен и оплачен';
+COMMENT
+ON COLUMN
+    "order"."payment_type" IS 'тип оплаты:
+1 - нал
+2 - безнал';
+COMMENT
+ON COLUMN
+    "order"."payment_status" IS '1-оплачен
+2- неоплачен
+3 - отменен';
+ALTER TABLE
+    "order" ADD CONSTRAINT "order_client_id_foreign" FOREIGN KEY("client_id") REFERENCES "client"("id");
+ALTER TABLE
+    "order" ADD CONSTRAINT "order_site_id_foreign" FOREIGN KEY("site_id") REFERENCES "site"("id");
+ALTER TABLE
+    "order" ADD CONSTRAINT "order_letter_id_foreign" FOREIGN KEY("letter_id") REFERENCES "letters"("id");
+ALTER TABLE
+    "order" ADD CONSTRAINT "order_sms_id_foreign" FOREIGN KEY("sms_id") REFERENCES "sms"("id");
+ALTER TABLE
+    "order" ADD CONSTRAINT "order_responsible_id_foreign" FOREIGN KEY("responsible_id") REFERENCES "responsible"("id");
+ALTER TABLE
+    "order" ADD CONSTRAINT "order_call_id_foreign" FOREIGN KEY("call_id") REFERENCES "calls"("id");
+ALTER TABLE
+    "order_items" ADD CONSTRAINT "order_items_items_id_foreign" FOREIGN KEY("items_id") REFERENCES "item"("id");
+ALTER TABLE
+    "order" ADD CONSTRAINT "order_delivery_id_foreign" FOREIGN KEY("delivery_id") REFERENCES "delivery"("id");
+ALTER TABLE
+    "order_items" ADD CONSTRAINT "order_items_order_id_foreign" FOREIGN KEY("order_id") REFERENCES "order"("id");
+
+*/
+
+
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (1, 'Волкова Зинаида Леонидовна', 'ОАО «Дорофеев, Ситникова и Лыткина»', 9097.88, '+7 980 969 84 77', 'fokinpetr@example.org', 'д. Салават, ш. Цветочное, д. 2, 595564');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (2, 'Юдин Евдоким Иларионович', 'Гаврилов и партнеры', 7093.65, '+7 (888) 947-18-06', 'ereme26@example.com', 'п. Брянск, пр. Заречный, д. 3 стр. 934, 394560');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (3, 'Мечислав Филимонович Колобов', 'РАО «Зиновьева-Максимова»', 684.19, '8 (227) 585-36-28', 'obaranov@example.com', 'г. Салехард, ш. Хвойное, д. 336 стр. 6, 544033');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (4, 'Алина Валентиновна Борисова', 'ОАО «Молчанова, Лазарева и Королев»', 854.5, '8 530 294 8318', 'vsevolodkalashnikov@example.com', 'г. Поронайск, пер. Красногвардейский, д. 39 к. 41, 534774');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (5, 'Кирилл Матвеевич Веселов', 'Свеза', 1379.12, '+7 035 304 4708', 'drozdovkonstantin@example.net', 'г. Хасавюрт, ш. Красногвардейское, д. 2/7 стр. 2/2, 223209');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (6, 'Иванов Доброслав Герасимович', 'ИП «Пахомова, Белоусов и Захаров»', 9109.91, '8 (120) 954-04-26', 'ivoronova@example.org', 'к. Кимры, пр. Инженерный, д. 97 к. 4/6, 534581');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (7, 'Карпов Эраст Филимонович', 'АО «Фомичева Самойлов»', 8024.75, '8 (780) 700-7570', 'ivanovaanastasija@example.org', 'ст. Минусинск, пер. Механизаторов, д. 241 к. 9/5, 951887');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (8, 'Анастасия Никифоровна Савельева', 'ЗАО «Журавлев Михеев»', 4270.87, '+7 (924) 203-38-24', 'miron1997@example.org', 'д. Зарайск, наб. Болотная, д. 68 стр. 179, 548753');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (9, 'Васильев Фотий Егорович', 'ИП «Кудряшов Алексеев»', 9273.38, '8 (800) 409-11-52', 'azarifedotov@example.org', 'ст. Мезень, наб. Болотная, д. 127, 031745');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (10, 'Олимпиада Кузьминична Сорокина', 'АО «Симонов»', 8386.27, '+73887419912', 'aleksandr1992@example.net', 'к. Белоярский, пер. Угольный, д. 87 стр. 6/9, 593578');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (11, 'Валентина Максимовна Константинова', 'Кубанская нефтегазовая компания', 5331.97, '8 313 451 9727', 'karp_1990@example.net', 'ст. Петухово, бул. Балтийский, д. 31 стр. 14, 443947');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (12, 'Сократ Ермолаевич Соловьев', 'Силин Инк', 3503.26, '8 114 381 29 41', 'izjaslav2015@example.com', 'к. Чикола, ш. Невского, д. 72, 490553');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (13, 'Калинина Нина Тимофеевна', 'ОТП Банк', 6877.5, '82725623300', 'galaktion_44@example.com', 'д. Кириши, алл. Волгоградская, д. 28 стр. 620, 213381');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (14, 'Дементьев Митофан Викентьевич', 'ИП «Устинова»', 1105.8, '8 (158) 198-0508', 'valeri30@example.net', 'к. Сызрань, наб. Черемушки, д. 1, 301344');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (15, 'Глеб Игнатьевич Егоров', 'ОАО «Ширяев Галкин»', 462.36, '+7 614 007 89 84', 'dbragina@example.org', 'к. Североморск, пер. Пролетарский, д. 8 к. 338, 863869');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (16, 'Беспалов Стоян Бенедиктович', 'РАО «Кулаков-Константинов»', 9361.8, '8 411 692 61 47', 'prohorovazari@example.org', 'с. Пушкино (Моск.), наб. Бригадная, д. 9/4 стр. 815, 912851');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (17, 'Суханов Юлиан Эдгардович', 'ЗАО «Маркова Журавлева»', 9090.26, '8 (756) 686-4136', 'vladlen_1985@example.org', 'г. Смирных, ул. Гайдара, д. 74, 998644');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (18, 'Полина Кирилловна Харитонова', 'АО «Дроздова, Наумов и Петров»', 9878.35, '+7 929 415 45 89', 'orehovdobromisl@example.com', 'с. Губкин, ул. Боровая, д. 7/7 к. 9/9, 727337');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (19, 'Марфа Антоновна Артемьева', 'Савельев и партнеры', 954.67, '+7 782 658 5057', 'chernovfoti@example.com', 'с. Нефтегорск (Самар.), пр. Тамбовский, д. 6 стр. 2, 250259');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (20, 'Степан Ефстафьевич Михайлов', 'Савельева Лимитед', 330.23, '+7 555 228 22 93', 'averki1986@example.com', 'клх Радужный, ш. Революции, д. 67 стр. 954, 479294');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (21, 'Носов Максимильян Абрамович', 'ИП «Лобанова-Емельянов»', 1869.43, '+7 770 299 39 50', 'prohor_00@example.net', 'ст. Шарья, ул. Ярославская, д. 2, 747602');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (22, 'Клавдий Аксёнович Бобров', 'ОАО «Дорофеев»', 782.39, '+7 (292) 663-9754', 'ponomarevsimon@example.com', 'к. Юрьев-Польский, алл. Свердлова, д. 842, 079311');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (23, 'Анжела Сергеевна Прохорова', 'Алексеев Инк', 1834.38, '+75745544992', 'radislavzikov@example.org', 'ст. Муром, пер. Фрунзе, д. 7, 040059');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (24, 'Наина Кузьминична Ершова', 'Инвестнефтетрейд', 2314.28, '80336272774', 'alevtina_03@example.net', 'ст. Чулым, алл. Сибирская, д. 183, 221789');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (25, 'Карпова Галина Тарасовна', 'ИП «Калинин, Коновалов и Силин»', 5239.1, '8 127 794 0412', 'german98@example.org', 'д. Беслан, алл. Ореховая, д. 7/8, 906324');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (26, 'Горшков Юлиан Абрамович', 'ОАО «Ершов-Комарова»', 6163.61, '+7 (308) 276-3601', 'kgorbachev@example.org', 'п. Октябрьский (Башк.), наб. Балтийская, д. 2, 421318');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (27, 'Рогова Алла Мироновна', 'ИП «Орлов»', 9517.98, '8 962 542 98 44', 'vinogradovaksenija@example.com', 'г. Абинск, бул. Дружбы, д. 3/7 к. 24, 258321');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (28, 'Копылова Валентина Александровна', 'АО «Игнатьева, Казаков и Кондратьева»', 8663.5, '8 481 127 66 57', 'artemismirnov@example.com', 'д. Александров Гай, алл. Черемуховая, д. 7/2, 347709');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (29, 'Устин Харламович Шарапов', 'Сингента (Chemchina)', 5295.2, '8 (849) 314-51-41', 'knjazevmoise@example.net', 'к. Рославль, бул. Механический, д. 721 стр. 42, 898557');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (30, 'Олимпиада Робертовна Горбунова', 'Степанов Групп', 1239.76, '+7 (220) 746-42-97', 'lora1976@example.com', 'клх Хужир, пр. Водников, д. 9/3, 729671');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (31, 'Надежда Афанасьевна Кулакова', 'АО «Кузьмина, Брагин и Федосеева»', 4281.34, '8 952 735 92 47', 'evgeni2005@example.com', 'с. Кировск (Ленин.), наб. Лесозаводская, д. 873 к. 28, 746658');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (32, 'Матвеева Зоя Архиповна', 'ОАО «Горбунова»', 1238.39, '+7 (511) 575-5329', 'qlobanov@example.com', 'г. Красноярск, ул. Восточная, д. 68, 509702');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (33, 'Красильников Эрнест Тихонович', 'НПО «Степанова»', 3886.68, '8 868 292 7510', 'beljakovfrol@example.net', 'г. Буденновск, наб. Журавлева, д. 5/2, 795044');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (34, 'г-н Ларионов Адам Филатович', 'РАО «Шаров Королев»', 809.84, '8 (320) 700-7500', 'seliverst_2015@example.net', 'клх Катайск, наб. Заовражная, д. 724 к. 1, 273515');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (35, 'Нонна Алексеевна Зимина', 'НПО «Ситников-Гордеев»', 1285.82, '+7 817 710 2799', 'ratmir_2001@example.org', 'г. Раменское, пр. Клубный, д. 453 стр. 6, 853195');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (36, 'Марина Викторовна Морозова', 'ЗАО «Калинин-Чернов»', 743.49, '8 (301) 948-86-27', 'ltarasova@example.org', 'г. Златоуст, алл. Поперечная, д. 1/8 к. 5/8, 965766');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (37, 'Ермаков Станимир Гавриилович', 'Белозеров и партнеры', 6973.37, '8 (916) 869-82-08', 'nestor_2008@example.com', 'п. Киренск, пр. Гражданский, д. 256 к. 923, 831239');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (38, 'Шарапова Наталья Натановна', 'Орлова Инкорпорэйтед', 3821.16, '8 (516) 286-59-64', 'moiseevaanastasija@example.com', 'д. Байкальск, наб. Северная, д. 52 к. 82, 354293');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (39, 'Сысоев Гурий Георгиевич', 'ЗАО «Симонова, Голубев и Виноградов»', 7328.1, '+7 (247) 346-88-71', 'trofimovauljana@example.net', 'ст. Кузнецк, пер. Серафимовича, д. 3 к. 72, 068788');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (40, 'Майя Федоровна Юдина', 'ООО «Ларионова-Соловьева»', 4661.2, '8 726 051 8625', 'moke_66@example.net', 'п. Назрань, ул. Островского, д. 1/3 стр. 5, 745971');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (41, 'Пелагея Станиславовна Пономарева', 'РАО «Борисова»', 7856.71, '8 (639) 018-08-25', 'evpraksija_1991@example.net', 'клх Петухово, пер. Дальний, д. 10 к. 8/3, 863824');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (42, 'Анатолий Феоктистович Романов', 'ЗАО «Кошелева»', 4037.68, '8 667 851 8743', 'kornilovkapiton@example.org', 'д. Сызрань, пр. Ильича, д. 3/2 стр. 4, 646464');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (43, 'Прасковья Ефимовна Колесникова', 'ЗАО «Егорова Жуков»', 1662.88, '+7 (572) 090-96-30', 'burovmoke@example.net', 'к. Набережные Челны, наб. Павлова, д. 8/8 стр. 9/1, 225751');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (44, 'Семенова Любовь Михайловна', 'НПО «Хохлова, Шестакова и Савельева»', 7136.81, '8 894 167 0201', 'beljakovmakar@example.org', 'г. Нижнеудинск, пр. Прохладный, д. 449 стр. 2/6, 362294');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (45, 'Степанов Антип Иосипович', 'ООО «Воронцова»', 4756.88, '8 811 055 5946', 'anzhela_08@example.org', 'к. Рубцовск, алл. Дарвина, д. 769, 151858');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (46, 'Евдокимов Лучезар Адамович', 'НПО «Никитин, Горшкова и Лихачев»', 2233.97, '+7 429 140 60 82', 'kovalevaraisa@example.org', 'к. Губаха, ш. Невского, д. 8/4 стр. 68, 292490');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (47, 'Некрасова Эмилия Валериевна', 'ИП «Журавлева, Гришин и Силин»', 8747.8, '8 921 275 60 08', 'fevronija_81@example.com', 'ст. Можайск, бул. Березовый, д. 9/1, 203607');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (48, 'Романова Милица Борисовна', 'Иркутская нефтяная компания', 3814.57, '8 (294) 577-2157', 'anisim_2004@example.net', 'ст. Дубна, пр. Локомотивный, д. 6 к. 1/9, 916293');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (49, 'Ольга Афанасьевна Киселева', 'НПО «Моисеев-Соловьев»', 8284.89, '8 (918) 807-34-63', 'ilarion69@example.com', 'с. Змеиногорск, алл. Прудовая, д. 37 к. 621, 570514');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (50, 'Юдина Варвара Валентиновна', 'Панова Лтд', 1039.51, '8 204 550 40 38', 'guljaevvsemil@example.com', 'г. Пышма, пр. Веселый, д. 6/4 к. 19, 361892');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (51, 'Ангелина Константиновна Якушева', 'НПО «Чернова Ефремова»', 3113.3, '+70094605492', 'ponomarevafinogen@example.org', 'к. Териберка, ул. Новгородская, д. 327 к. 7, 970954');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (52, 'Элеонора Даниловна Сысоева', 'НПО «Орехова»', 9443.1, '8 (820) 331-0672', 'pavlovluka@example.net', 'клх Северо-Курильск, алл. Гайдара, д. 9 к. 87, 140561');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (53, 'Веселов Станислав Гертрудович', 'Корпорация Гринн', 4783.29, '+7 780 901 3614', 'arefi2000@example.org', 'г. Ангарск, наб. Иванова, д. 84 стр. 186, 155205');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (54, 'Зиновьев Макар Устинович', 'Горшкова и партнеры', 5487.92, '8 868 873 46 46', 'serafim_1982@example.org', 'к. Беломорск, бул. Громова, д. 2, 486811');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (55, 'Пелагея Эдуардовна Мишина', 'Носова Лимитед', 4220.37, '8 (825) 935-44-05', 'ovolkova@example.net', 'п. Мичуринск, ш. Весеннее, д. 33 к. 3, 916850');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (56, 'Валентина Мироновна Нестерова', 'РАО «Овчинников»', 7701.82, '80146147461', 'belovnazar@example.com', 'к. Переславль-Залесский, пр. Кооперативный, д. 7, 440242');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (57, 'Лидия Альбертовна Быкова', 'Родионов Инк', 1074.15, '+7 (348) 156-15-48', 'xvolkova@example.org', 'с. Ардон, бул. Мира, д. 38 к. 25, 989804');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (58, 'Остромир Юльевич Антонов', 'Васильева Групп', 8128.2, '87636747689', 'vera79@example.org', 'ст. Сарапул, пр. Юности, д. 814 к. 691, 617103');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (59, 'Михей Тимурович Орехов', 'ОАО «Кузнецов»', 3594.5, '8 300 377 7729', 'petrisaev@example.net', 'п. Мытищи, пер. Безымянный, д. 1/7 стр. 3/3, 183741');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (60, 'Родион Витальевич Уваров', 'Брагина Лимитед', 8546.18, '8 070 277 0020', 'veronika_51@example.net', 'ст. Избербаш, алл. Украинская, д. 3/1 к. 4, 462410');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (61, 'г-н Лихачев Демьян Евстигнеевич', 'ОАО «Андреева, Шилова и Константинова»', 2391.61, '8 (881) 185-61-52', 'kulikovnestor@example.net', 'с. Шатой, ул. Кавказская, д. 5 к. 700, 619322');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (62, 'Лазарева Лариса Вячеславовна', 'Филиппов Инкорпорэйтед', 7226.57, '+7 881 253 7963', 'elena98@example.org', 'г. Липецк, бул. Крылова, д. 2 стр. 651, 699391');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (63, 'тов. Орехов Филипп Измаилович', 'ИП «Яковлев-Костина»', 7888.17, '8 (562) 200-1197', 'arseni_1990@example.net', 'с. Пушкино (Моск.), пер. Клары Цеткин, д. 9, 667785');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (64, 'Селиверстов Ратмир Викентьевич', 'ЗАО «Авдеева»', 687.6, '+7 (891) 280-29-30', 'smirnovagalina@example.org', 'к. Якша, наб. Жуковского, д. 9/8 к. 5/2, 946100');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (65, 'Владимир Юльевич Ершов', 'ИП «Иванова, Буров и Антонов»', 3370.66, '8 (625) 034-3048', 'larionovagalina@example.com', 'клх Ербогачен, ш. Гафури, д. 49, 911757');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (66, 'Нина Мироновна Гусева', 'Лобанова Групп', 6074.9, '+77026668098', 'platon_76@example.net', 'к. Партизанск, ш. Детское, д. 1, 897582');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (67, 'Зайцев Поликарп Аверьянович', 'Тихонова и партнеры', 3404.88, '8 (886) 164-6267', 'mironovkasjan@example.net', 'п. Ершов, ул. 9 Января, д. 7/2 стр. 9, 724598');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (68, 'Мишин Капитон Валерьянович', 'ООО «Князев, Лапин и Устинов»', 8803.6, '+7 292 541 7622', 'asilin@example.com', 'д. Норильск, наб. Пугачева, д. 703, 216577');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (69, 'Игнатьева Татьяна Болеславовна', 'НПО «Воронов Кузьмина»', 1372.15, '83689888912', 'elena_1990@example.net', 'д. Гатчина, наб. Надежды, д. 5 к. 7, 760469');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (70, 'Татьяна Викторовна Блохина', 'Фокина Групп', 1171.38, '8 (557) 986-57-89', 'muravevvenedikt@example.net', 'к. Брянск, пр. Кедровый, д. 1/9 к. 34, 129857');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (71, 'Борисов Юлиан Гаврилович', 'РАО «Голубев»', 482.16, '+7 (336) 337-5863', 'svetlana2020@example.com', 'к. Сибай, ул. Красноярская, д. 1/5 стр. 74, 594464');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (72, 'Олимпий Всеволодович Орехов', 'РАО «Третьяков-Мамонтов»', 2641.21, '8 250 117 65 63', 'naum_58@example.org', 'к. Ершов, бул. Садовый, д. 9 к. 3/9, 858817');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (73, 'Анисимова Любовь Яковлевна', 'ИП «Цветков, Блинов и Кондратьев»', 4708.84, '+7 (983) 610-8711', 'anisimovermola@example.org', 'г. Шатура, ул. Кирпичная, д. 535, 171586');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (74, 'Алина Олеговна Киселева', 'НПО «Николаев, Антонова и Дьячков»', 3791.22, '+7 (474) 754-3120', 'popovdenis@example.net', 'к. Тамбов, бул. Шоссейный, д. 8/4 к. 25, 258880');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (75, 'Константинова Октябрина Андреевна', 'Суханов Лимитед', 3662.42, '8 (094) 780-7049', 'radim24@example.org', 'п. Пышма, пр. Карла Маркса, д. 3/4 стр. 553, 443368');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (76, 'Яковлева София Эдуардовна', 'Группа Рольф', 6701.94, '8 (943) 732-0739', 'ermakovbronislav@example.com', 'г. Красноселькуп, ш. Ярославское, д. 91 к. 53, 641497');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (77, 'Ермолай Брониславович Романов', 'ОАО «Захаров, Морозова и Чернов»', 8414.97, '8 871 155 57 40', 'nestor_1979@example.com', 'п. Биробиджан, ш. Интернациональное, д. 5/7 стр. 7/8, 733853');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (78, 'Мария Павловна Карпова', 'Шестаков Лимитед', 5957.12, '8 344 942 54 17', 'tihonovsamuil@example.net', 'ст. Усть-Катав, бул. Кочубея, д. 952 стр. 21, 262222');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (79, 'Алла Оскаровна Меркушева', 'Ефимов Групп', 7924.23, '+7 040 670 11 27', 'hvoronova@example.com', 'г. Урюпинск, пер. Тракторный, д. 67 стр. 33, 754257');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (80, 'Костина Зинаида Тимуровна', 'НПО «Кузнецова-Павлова»', 31.13, '84222560260', 'tsvetkovamarfa@example.net', 'с. Избербаш, ул. 8-е Марта, д. 148, 720812');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (81, 'Некрасов Натан Гаврилович', 'РАО «Наумова-Савин»', 5370.99, '8 410 532 89 29', 'iosif47@example.net', 'ст. Саратов, пр. Никитина, д. 6 стр. 2, 972085');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (82, 'Софрон Аксёнович Голубев', 'ОАО «Игнатова»', 2132.19, '+7 (594) 672-6989', 'kulaginseliverst@example.com', 'д. Шатки, ул. Монтажников, д. 832, 182655');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (83, 'Медведев Андрон Валерианович', 'Агафонов Лтд', 9510.55, '+7 (504) 322-1007', 'vatslav04@example.org', 'ст. Можайск, бул. Кузнечный, д. 989 к. 7, 526070');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (84, 'Селезнева Оксана Леонидовна', 'ЗАО «Макаров, Тихонова и Панфилов»', 3481.47, '8 154 726 10 98', 'kuprijan_00@example.com', 'клх Курильск, бул. Титова, д. 9 стр. 9/3, 959005');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (85, 'Флорентин Ефремович Моисеев', 'АО «Бобылева, Захарова и Пахомова»', 2536.21, '8 877 740 6856', 'evgraf39@example.org', 'с. Кимры, бул. Краснознаменный, д. 6/6 к. 46, 854951');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (86, 'Регина Сергеевна Колесникова', 'ОАО «Антонов Степанова»', 5880.63, '85789917978', 'bazhen_1978@example.net', 'к. Прохладный, пер. Веселый, д. 796, 760351');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (87, 'Ксения Геннадиевна Горбунова', 'Группа компаний ПИК', 5930.78, '+71052243749', 'spestov@example.net', 'к. Горячий Ключ, пр. Верхний, д. 929, 708203');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (88, 'Филатов Евлампий Арсенович', 'ЗАО «Шилов»', 6836.7, '+7 573 219 9825', 'bespalovaleksandr@example.net', 'п. Ангарск, алл. Средняя, д. 43 к. 3, 489154');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (89, 'Олимпиада Кузьминична Копылова', 'ВымпелКом', 2761.5, '8 (696) 825-26-39', 'ksuvorova@example.com', 'клх Шереметьево, пр. Мичурина, д. 4 к. 623, 574360');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (90, 'Сысоева Любовь Феликсовна', 'Жукова Инк', 6188.15, '8 (384) 974-8918', 'kalashnikovilarion@example.org', 'д. Сунтар, пер. Чехова, д. 4 стр. 2/1, 267099');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (91, 'Федоров Антонин Тихонович', 'Дьячкова и партнеры', 5969.55, '+7 360 726 60 50', 'sitnikovvladislav@example.org', 'ст. Шилка, алл. Кольцова, д. 2/6 к. 9, 014406');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (92, 'Феврония Вадимовна Горшкова', 'Техкомпания Хуавэй (Huawei)', 9228.27, '+7 800 059 47 52', 'smirnovaraisa@example.com', 'г. Двинской, пр. Троицкий, д. 33 к. 83, 553644');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (93, 'Лыткин Ипполит Егорович', 'ООО «Лаврентьев»', 4641.94, '8 225 490 94 16', 'radovanershov@example.com', 'д. Кирово-Чепецк, алл. Солнечная, д. 205 к. 49, 563019');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (94, 'Чернов Панфил Матвеевич', 'НПО «Беляева, Крылов и Федотов»', 4757.75, '+7 (488) 189-16-47', 'belousovvelimir@example.net', 'г. Ревда (Сверд.), пр. Рыбацкий, д. 63 к. 3, 212532');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (95, 'Мясников Назар Артурович', 'ООО «Блинов»', 131.8, '+70168143150', 'grigorevkir@example.com', 'с. Калининград, бул. Чернышевского, д. 4, 526737');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (96, 'Ольга Львовна Казакова', 'ИП «Макаров-Матвеев»', 3897.98, '83379073669', 'sorokinanani@example.org', 'к. Назрань, ул. Советская, д. 21 к. 528, 515136');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (97, 'Афанасьев Сергей Фокич', 'ЧТПЗ', 2097.44, '8 356 082 08 49', 'zinaida_88@example.net', 'с. Каргасок, алл. Толстого, д. 595 к. 572, 335493');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (98, 'Иванов Мина Антипович', 'ЗАО «Бурова-Богданов»', 6500.97, '8 (885) 835-36-53', 'arkadisilin@example.net', 'д. Палана, ш. Тенистое, д. 19, 309218');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (99, 'Красильникова Наина Эльдаровна', 'НПО «Якушев, Ефремов и Галкин»', 5996.22, '+7 328 911 07 00', 'viktorin30@example.org', 'ст. Жуковский, ул. Ульяновская, д. 7/4, 667898');
+INSERT INTO "client" ("id", "name", "company", "inn", "phone_number_client", "email_client", "adress_client") VALUES (100, 'Пантелеймон Иларионович Гордеев', 'АО «Котова-Кондратьев»', 3981.93, '+7 448 201 5464', 'vorobevstanislav@example.com', 'клх Углич, ул. М.Горького, д. 8, 784175');
+
+
+
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (1, 'самовывоз', 'клх Радужный, алл. Надежды, д. 2 стр. 8/5, 501533');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (2, 'самовывоз', 'ст. Касимов, алл. Механическая, д. 80, 173562');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (3, 'самовывоз', 'клх Диксон, наб. Прибрежная, д. 99, 047995');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (4, 'доставка на адрес', 'к. Славянск-на-Кубани, ш. Нефтяников, д. 7/1, 815278');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (5, 'самовывоз', 'д. Тихвин, пер. Привокзальный, д. 1 к. 2/8, 980937');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (6, 'доставка на адрес', 'к. Муром, ш. Некрасова, д. 365 стр. 62, 756513');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (7, 'самовывоз', 'клх Хоста, бул. Кирпичный, д. 1 стр. 7/7, 027114');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (8, 'доставка на адрес', 'клх Гдов, пр. Прудный, д. 54 к. 11, 332320');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (9, 'доставка на адрес', 'клх Красногорск (Моск.), бул. Титова, д. 23 к. 87, 661501');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (10, 'доставка на адрес', 'к. Санкт-Петербург, пр. Иркутский, д. 9 стр. 5, 585992');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (11, 'доставка на адрес', 'д. Городовиковск, ш. Сосновое, д. 34, 033023');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (12, 'самовывоз', 'к. Александровск-Сахалинский, ш. Ясное, д. 4/5 стр. 95, 369060');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (13, 'доставка на адрес', 'п. Богучар, ул. Ленина, д. 6/9 стр. 28, 805014');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (14, 'самовывоз', 'ст. Сасово, алл. Сибирская, д. 5/5, 708881');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (15, 'доставка на адрес', 'г. Урай, пер. Радужный, д. 763 к. 87, 092997');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (16, 'самовывоз', 'ст. Одинцово, алл. Ермака, д. 8/6 к. 55, 238795');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (17, 'самовывоз', 'п. Сеймчан, алл. Некрасова, д. 374 к. 4/9, 112671');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (18, 'самовывоз', 'с. Абинск, наб. Минина, д. 49 к. 295, 099699');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (19, 'доставка на адрес', 'клх Нефедова, наб. Запорожская, д. 15 стр. 32, 862803');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (20, 'самовывоз', 'д. Хоста, ш. Московское, д. 7/6 стр. 6, 414000');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (21, 'самовывоз', 'п. Плес, алл. Водопроводная, д. 1, 822804');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (22, 'доставка на адрес', 'с. Королев, бул. Труда, д. 228 к. 7, 027524');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (23, 'самовывоз', 'клх Усмань, пр. Колхозный, д. 29 стр. 4/2, 930620');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (24, 'доставка на адрес', 'п. Уварово, пер. Совхозный, д. 702 к. 61, 950783');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (25, 'самовывоз', 'с. Таганрог, алл. Красных Партизан, д. 6, 498450');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (26, 'доставка на адрес', 'клх Салехард, наб. Промышленная, д. 1/7 к. 3, 821631');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (27, 'доставка на адрес', 'к. Углегорск, бул. Шоссейный, д. 26 к. 671, 915800');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (28, 'доставка на адрес', 'г. Тулун, пр. Цветочный, д. 9/1 к. 3, 216555');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (29, 'доставка на адрес', 'п. Асино, бул. Кавказский, д. 9, 826608');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (30, 'самовывоз', 'д. Двинской, бул. Коммунальный, д. 6 стр. 21, 293305');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (31, 'самовывоз', 'с. Хатанга, алл. Зои Космодемьянской, д. 4/1, 041042');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (32, 'самовывоз', 'клх Кедровый, наб. Павлова, д. 68 стр. 502, 670695');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (33, 'доставка на адрес', 'клх Палана, ул. Заречная, д. 2 стр. 110, 652996');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (34, 'самовывоз', 'с. Всеволожск, наб. Крупской, д. 8/1, 361777');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (35, 'самовывоз', 'п. Сеймчан, алл. Радищева, д. 762 к. 57, 250106');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (36, 'доставка на адрес', 'клх Лесной (Сверд.), наб. Кузнецкая, д. 8 к. 66, 178100');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (37, 'самовывоз', 'г. Ряжск, пр. Васильковый, д. 9/3, 443578');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (38, 'доставка на адрес', 'д. Люберцы, алл. Рязанская, д. 545 к. 403, 153042');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (39, 'доставка на адрес', 'г. Октябрьский (Башк.), ул. Свердлова, д. 5/1 стр. 2, 715791');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (40, 'самовывоз', 'г. Шатки, ул. Подстанция, д. 797 к. 7, 311668');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (41, 'самовывоз', 'ст. Гдов, алл. Смирнова, д. 4, 043156');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (42, 'самовывоз', 'ст. Мыс Шмидта, наб. Репина, д. 662 стр. 3, 241620');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (43, 'доставка на адрес', 'ст. Стерлитамак, ул. Восьмого Марта, д. 6/1 к. 976, 874785');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (44, 'самовывоз', 'к. Ступино, бул. Тимирязева, д. 918 к. 7/3, 505656');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (45, 'доставка на адрес', 'клх Амдерма, ш. Свердлова, д. 4/1, 610814');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (46, 'самовывоз', 'к. Яхрома, пр. Камский, д. 384 к. 362, 146525');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (47, 'самовывоз', 'клх Прохладный, наб. Крылова, д. 5/1, 054308');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (48, 'доставка на адрес', 'ст. Карабулак, пер. Ясный, д. 85 стр. 7/8, 420275');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (49, 'самовывоз', 'п. Вытегра, ш. Короленко, д. 10 к. 368, 392167');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (50, 'доставка на адрес', 'д. Волгоград, ул. Деповская, д. 2/6 к. 95, 482722');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (51, 'доставка на адрес', 'ст. Орехово-Зуево, ш. Волочаевское, д. 9/6, 467792');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (52, 'самовывоз', 'с. Соликамск, пр. Садовый, д. 62, 002941');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (53, 'доставка на адрес', 'д. Усть-Камчатск, пер. 9 мая, д. 52 к. 4/8, 736305');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (54, 'самовывоз', 'д. Льгов, пер. Дорожный, д. 6/7, 344101');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (55, 'самовывоз', 'д. Кашира, пр. Рябиновый, д. 457 к. 85, 061632');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (56, 'самовывоз', 'к. Пушкино (Моск.), наб. Станционная, д. 12 к. 242, 942485');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (57, 'доставка на адрес', 'г. Шатой, ш. Фестивальное, д. 3 стр. 1/1, 459343');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (58, 'самовывоз', 'ст. Новомичуринск, бул. Павлова, д. 102 к. 5, 397207');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (59, 'доставка на адрес', 'п. Устюжна, ул. Клары Цеткин, д. 510 стр. 9/7, 744893');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (60, 'доставка на адрес', 'п. Баргузин, ш. Достоевского, д. 37 стр. 342, 779123');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (61, 'доставка на адрес', 'г. Волгодонск, наб. Свободная, д. 4/7, 011508');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (62, 'самовывоз', 'д. Ессентуки, пр. Восточный, д. 5/6 стр. 5/7, 605384');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (63, 'самовывоз', 'с. Боровск, ул. Карьерная, д. 9/2, 341453');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (64, 'доставка на адрес', 'клх Курильск, пр. Привольный, д. 7, 859035');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (65, 'самовывоз', 'п. Воскресенск, ул. Городская, д. 594 стр. 467, 111173');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (66, 'доставка на адрес', 'г. Руза, пр. 60 лет СССР, д. 981, 735770');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (67, 'доставка на адрес', 'д. Усинск, пер. Социалистический, д. 51 стр. 241, 496981');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (68, 'доставка на адрес', 'ст. Усть-Илимск, бул. Калинина, д. 52 к. 639, 535340');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (69, 'доставка на адрес', 'клх Кизилюрт, ш. Машиностроителей, д. 9 к. 9/4, 320178');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (70, 'самовывоз', 'клх Аршан (Бурят.), ул. Кузнечная, д. 6 стр. 4/5, 197432');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (71, 'доставка на адрес', 'п. Балтийск, алл. Веселая, д. 5/8, 811994');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (72, 'доставка на адрес', 'с. Уварово, бул. Дальневосточный, д. 4/2 к. 5, 094382');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (73, 'доставка на адрес', 'клх Сосновый Бор, ш. Приморское, д. 8/6 стр. 7/2, 530610');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (74, 'самовывоз', 'ст. Новая Игирма, пер. Владимирский, д. 89 стр. 548, 586170');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (75, 'самовывоз', 'г. Сочи, пер. Слободской, д. 7/7, 492932');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (76, 'самовывоз', 'к. Дмитров, ул. Олимпийская, д. 25 к. 85, 784210');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (77, 'доставка на адрес', 'д. Зеленогорск (Ленин.), пер. Ветеранов, д. 79 стр. 6/4, 434876');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (78, 'доставка на адрес', 'клх Россошь, пер. Мира, д. 587 стр. 410, 692271');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (79, 'доставка на адрес', 'г. Североморск, ш. Курское, д. 777 к. 942, 073576');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (80, 'самовывоз', 'д. Лянтор, ш. Пролетарское, д. 85, 105570');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (81, 'доставка на адрес', 'г. Добрянка, ул. Прудная, д. 50 стр. 520, 913203');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (82, 'самовывоз', 'г. Тутончаны, ул. Шоссейная, д. 400, 885378');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (83, 'доставка на адрес', 'ст. Южноуральск, ш. Ульяновское, д. 6/9, 537257');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (84, 'доставка на адрес', 'с. Чегем, алл. Невского, д. 3/3 к. 775, 058630');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (85, 'самовывоз', 'к. Александровск-Сахалинский, бул. Космический, д. 345 стр. 6/9, 874659');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (86, 'доставка на адрес', 'с. Балтийск, наб. Жданова, д. 85 к. 5/6, 154678');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (87, 'самовывоз', 'д. Кировск (Мурм.), пер. Курганный, д. 560 к. 1/7, 254022');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (88, 'самовывоз', 'ст. Горно-Алтайск, наб. Березовая, д. 8/2 стр. 15, 075963');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (89, 'доставка на адрес', 'д. Дербент, алл. 8 Марта, д. 3 к. 87, 779913');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (90, 'доставка на адрес', 'к. Шатки, пер. Отрадный, д. 8 к. 6, 297942');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (91, 'доставка на адрес', 'ст. Яшкуль, ш. Мелиоративное, д. 9/1 стр. 491, 864056');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (92, 'самовывоз', 'к. Черусти, наб. Энтузиастов, д. 5 к. 777, 553760');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (93, 'самовывоз', 'клх Морозовск, пер. Сурикова, д. 1/1, 357135');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (94, 'доставка на адрес', 'д. Оленегорск (Якут.), ул. Элеваторная, д. 782 к. 4, 008321');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (95, 'доставка на адрес', 'г. Славянск-на-Кубани, пр. Слободской, д. 45, 846181');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (96, 'самовывоз', 'ст. Петухово, наб. Рябиновая, д. 20 к. 7, 151756');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (97, 'самовывоз', 'к. Сызрань, ул. Краснофлотская, д. 89, 311950');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (98, 'доставка на адрес', 'д. Советский, ш. Азина, д. 27 стр. 4/6, 083966');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (99, 'самовывоз', 'к. Игнашино, ш. Войкова, д. 880 к. 13, 332032');
+INSERT INTO "delivery" ("id", "type_delivery", "adress_delivery") VALUES (100, 'самовывоз', 'клх Дубна, ул. Котовского, д. 8/7 к. 426, 094793');
+
+
+
+
+INSERT INTO "responsible" ("id", "name", "post") VALUES (1, 'Кондратьева Марфа Сергеевна', 'менеджер');
+INSERT INTO "responsible" ("id", "name", "post") VALUES (2, 'Данила Юлианович Белоусов', 'курьер');
+INSERT INTO "responsible" ("id", "name", "post") VALUES (3, 'Пров Ааронович Зимин', 'склад');
+INSERT INTO "responsible" ("id", "name", "post") VALUES (4, 'Ювеналий Антипович Русаков', 'курьер');
+INSERT INTO "responsible" ("id", "name", "post") VALUES (5, 'Фома Ермолаевич Сергеев', 'менеджер');
+INSERT INTO "responsible" ("id", "name", "post") VALUES (6, 'Крылова Любовь Матвеевна', 'склад');
+INSERT INTO "responsible" ("id", "name", "post") VALUES (7, 'Владимиров Виссарион Брониславович', 'менеджер');
+INSERT INTO "responsible" ("id", "name", "post") VALUES (8, 'Яков Владиленович Овчинников', 'склад');
+INSERT INTO "responsible" ("id", "name", "post") VALUES (9, 'Горбачев Леон Герасимович', 'склад');
+INSERT INTO "responsible" ("id", "name", "post") VALUES (10, 'Милица Эдуардовна Горшкова', 'менеджер');
+
+
+
+INSERT INTO "letters" ("id", "date_letter", "status_letter", "email_letter", "text_letter") VALUES (1, '2023-10-28', 'отработано', 'eduard_79@example.org', 'сейф');
+INSERT INTO "letters" ("id", "date_letter", "status_letter", "email_letter", "text_letter") VALUES (2, '2023-02-25', 'отработано', 'lebedevkuprijan@example.com', 'боксы пластиковые');
+INSERT INTO "letters" ("id", "date_letter", "status_letter", "email_letter", "text_letter") VALUES (3, '2023-08-23', 'принято в работе', 'emilrusakov@example.net', 'перегородки для офиса');
+INSERT INTO "letters" ("id", "date_letter", "status_letter", "email_letter", "text_letter") VALUES (4, '2023-07-14', 'не принято в работу', 'klavdieliseev@example.org', 'бейджик');
+INSERT INTO "letters" ("id", "date_letter", "status_letter", "email_letter", "text_letter") VALUES (5, '2023-06-23', 'принято в работе', 'kimstepanov@example.org', 'сейф');
+
+
+INSERT INTO "sms" ("id", "date_sms", "phone_number_sms", "text_sms") VALUES (1, '2023-01-03', '+7 563 656 3042', 'собран');
+INSERT INTO "sms" ("id", "date_sms", "phone_number_sms", "text_sms") VALUES (2, '2023-04-22', '8 (198) 010-6724', 'в сборке');
+INSERT INTO "sms" ("id", "date_sms", "phone_number_sms", "text_sms") VALUES (3, '2023-02-18', '8 (420) 960-07-57', 'в сборке');
+INSERT INTO "sms" ("id", "date_sms", "phone_number_sms", "text_sms") VALUES (4, '2023-03-27', '+7 129 644 2725', 'готов к выдаче');
+INSERT INTO "sms" ("id", "date_sms", "phone_number_sms", "text_sms") VALUES (5, '2023-12-14', '8 552 084 0617', 'собран');
+
+
+
+
+INSERT INTO "calls" ("id", "date_call", "status_call", "phone_number_call", "link_audio_rec_call", "duration_call") VALUES (1, '2023-07-06', 'принят', '8 689 210 61 38', 'https://miro.com/app/board/uXjVMhfu4e0=/', 7995.91);
+INSERT INTO "calls" ("id", "date_call", "status_call", "phone_number_call", "link_audio_rec_call", "duration_call") VALUES (2, '2023-04-20', 'пропущен', '83248260379', 'https://miro.com/app/board/uXjVMhfu4d0=/', 548.93);
+INSERT INTO "calls" ("id", "date_call", "status_call", "phone_number_call", "link_audio_rec_call", "duration_call") VALUES (3, '2023-12-17', 'принят', '8 432 078 7059', 'https://miro.com/app/board/uXjVMhfu4e0=/', 8401.86);
+INSERT INTO "calls" ("id", "date_call", "status_call", "phone_number_call", "link_audio_rec_call", "duration_call") VALUES (4, '2023-11-05', 'пропущен', '87851988695', 'https://miro.com/app/board/uXjVMhfu4d0=/', 6676.26);
+INSERT INTO "calls" ("id", "date_call", "status_call", "phone_number_call", "link_audio_rec_call", "duration_call") VALUES (5, '2023-11-28', 'пропущен', '+7 (224) 890-86-80', 'https://miro.com/app/board/uXjVMhfu4e0=/', 474.76);
+INSERT INTO "calls" ("id", "date_call", "status_call", "phone_number_call", "link_audio_rec_call", "duration_call") VALUES (6, '2023-04-25', 'пропущен', '+7 (320) 208-87-02', 'https://miro.com/app/board/uXjVMhfu4e0=/', 3715.26);
+INSERT INTO "calls" ("id", "date_call", "status_call", "phone_number_call", "link_audio_rec_call", "duration_call") VALUES (7, '2023-09-06', 'пропущен', '8 319 098 21 12', 'https://miro.com/app/board/uXjVMhfu4e0=/', 1656.35);
+INSERT INTO "calls" ("id", "date_call", "status_call", "phone_number_call", "link_audio_rec_call", "duration_call") VALUES (8, '2023-11-24', 'принят', '8 809 113 1809', 'https://miro.com/app/board/uXjVMhfu4e0=/', 382.5);
+INSERT INTO "calls" ("id", "date_call", "status_call", "phone_number_call", "link_audio_rec_call", "duration_call") VALUES (9, '2023-02-24', 'принят', '8 059 027 27 94', 'https://miro.com/app/board/uXjVMhfu4d0=/', 5248.2);
+INSERT INTO "calls" ("id", "date_call", "status_call", "phone_number_call", "link_audio_rec_call", "duration_call") VALUES (10, '2023-11-24', 'принят', '8 (580) 706-6108', 'https://miro.com/app/board/uXjVMhfu4d0=/', 6309.33);
+
+
+
+
+
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (1, 'ежедневник недатированный', 83, '23.3x12.0x21.4', 8583.2, 6393.39);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (2, 'лотки вертикальные', 12, '18.8x20.7x71.8', 9245.3, 8725.34);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (3, 'медаль', 42, '16.7x41.2x29.3', 8568.68, 2292.1);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (4, 'зеркало', 89, '29.0x24.4x41.0', 7599.21, 2448.82);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (5, 'папка-планшет', 94, '59.5x53.8x28.8', 9457.18, 9790.9);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (6, 'папка-органайзер', 33, '21.9x65.0x48.5', 466.37, 6145.23);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (7, 'лампа настольная', 4, '15.1x40.9x32.1', 9788.73, 7548.54);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (8, 'карта России', 52, '22.6x11.6x46.5', 3100.53, 4914.69);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (9, 'степлер', 65, '61.4x16.1x36.3', 9702.67, 4586.63);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (10, 'набор ручек синих', 39, '48.2x55.6x52.4', 6784.4, 2857.55);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (11, 'папка-планшет', 41, '35.0x42.8x14.2', 4390.71, 8449.36);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (12, 'лотки вертикальные', 46, '33.4x69.2x33.3', 2220.39, 3943.64);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (13, ' набор ручек цветных', 40, '73.5x65.6x43.1', 7047.34, 5466.86);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (14, 'лотки горизонтальные', 84, '74.6x34.2x71.3', 5847.26, 6749.34);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (15, 'папка-планшет', 62, '61.5x11.2x60.2', 8208.96, 7713.58);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (16, 'калькулятор настольный', 65, '25.2x12.3x56.0', 3317.83, 5758.13);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (17, 'кисточка белка 1', 38, '57.5x56.9x16.3', 9502.61, 3641.1);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (18, 'стикеры', 60, '44.1x29.3x47.7', 6520.54, 6977.41);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (19, 'папки', 100, '14.5x35.8x31.7', 4714.27, 8198.83);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (20, 'кисточка белка 1', 50, '24.3x54.5x68.4', 6280.2, 493.3);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (21, 'кабины акустические', 75, '16.4x62.3x20.3', 8515.61, 4165.88);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (22, 'офисные перегородки', 51, '41.1x15.7x58.5', 4525.78, 9412.17);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (23, 'антистеплер', 51, '67.9x53.3x69.2', 1541.97, 7472.89);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (24, 'портфель для документов', 62, '54.6x66.2x55.0', 1674.15, 4502.74);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (25, 'ранец школьный', 8, '46.3x55.2x12.6', 1445.52, 122.29);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (26, ' набор ручек цветных', 80, '15.4x13.9x48.6', 3090.58, 8221.44);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (27, ' набор ручек цветных', 81, '44.1x20.4x54.7', 4872.62, 6008.26);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (28, 'бейджик', 13, '24.2x73.2x17.0', 7417.5, 4038.38);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (29, 'стикеры', 25, '63.1x16.3x74.4', 4912.88, 119.37);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (30, 'карта дорог России', 73, '13.4x32.2x21.6', 177.89, 8589.74);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (31, 'лампа настольная', 52, '41.7x13.2x20.5', 4231.12, 1708.36);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (32, 'скрепки', 19, '32.3x21.8x71.8', 737.77, 6047.11);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (33, 'калькулятор с печатающим устройством', 84, '63.3x20.9x52.6', 4164.93, 5676.41);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (34, 'ежедневник недатированный', 1, '64.2x37.2x63.1', 4155.71, 373.31);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (35, 'атлас 7 класс', 18, '72.5x19.5x54.8', 4564.46, 2370.7);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (36, 'зажимы', 24, '14.3x58.9x13.3', 7420.32, 5528.67);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (37, 'точилка машинка', 53, '27.6x15.3x34.4', 4586.31, 7950.17);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (38, 'портфель для документов', 79, '61.2x64.6x60.8', 8955.67, 1143.81);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (39, 'флипчарт', 86, '26.5x35.5x28.1', 9112.56, 7216.68);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (40, 'лотки вертикальные', 79, '31.3x33.9x51.8', 2456.4, 2055.95);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (41, 'карта России', 58, '17.2x62.3x23.8', 1341.11, 2202.15);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (42, 'офисные перегородки', 1, '29.3x69.8x36.3', 4077.2, 8868.4);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (43, 'клей жидкий', 56, '53.2x70.1x75.3', 9280.1, 8445.23);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (44, 'зеркало', 28, '34.5x66.3x75.0', 2363.92, 2561.91);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (45, 'калькулятор научный', 77, '31.7x56.7x16.6', 953.19, 2561.1);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (46, 'калькулятор настольный', 11, '43.1x14.9x51.2', 4497.7, 7865.14);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (47, 'атлас 7 класс', 4, '18.5x57.2x34.7', 7985.8, 5307.31);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (48, 'файлы', 28, '73.3x74.9x52.1', 776.67, 541.98);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (49, 'флипчарт', 5, '42.8x26.9x34.7', 3291.59, 9071.85);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (50, 'папка-органайзер', 77, '52.8x69.0x72.7', 6228.91, 7242.94);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (51, 'калькулятор с печатающим устройством', 93, '49.9x56.6x69.2', 6813.55, 4393.19);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (52, 'флипчарт', 93, '66.9x22.1x12.0', 1414.51, 5433.66);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (53, 'стелажи архивные', 41, '38.8x57.3x24.0', 2419.85, 847.48);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (54, 'конференц-кресло', 21, '63.4x57.4x30.7', 1506.44, 7783.84);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (55, 'папка архивная', 51, '59.3x25.7x58.2', 2725.72, 6808.37);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (56, 'перегородки для офиса', 4, '74.1x62.8x63.8', 4770.15, 6551.99);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (57, 'папка для тетрадей', 54, '45.9x65.0x48.6', 6877.74, 788.1);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (58, 'краски гуаш', 77, '41.7x41.5x35.1', 7869.6, 7058.8);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (59, 'конференц-столы', 9, '72.2x48.8x59.7', 3820.7, 9982.8);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (60, 'папки', 4, '16.7x41.5x29.4', 1671.73, 2208.58);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (61, 'антистеплер', 57, '48.0x39.0x66.6', 850.51, 9970.53);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (62, 'экран ля проектора', 15, '41.8x56.8x56.1', 2859.48, 9437.36);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (63, 'папки', 5, '62.3x64.9x12.8', 7023.71, 3413.39);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (64, ' набор ручек цветных', 74, '46.3x55.6x35.2', 828.78, 5590.6);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (65, 'блокнот', 37, '32.6x25.9x67.1', 42.72, 9656.86);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (66, 'медаль', 91, '54.9x43.4x33.9', 6559.92, 5416.13);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (67, 'файлы', 14, '67.6x55.4x46.3', 4855.1, 6477.86);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (68, 'кисточка белка 3', 46, '24.4x15.8x42.1', 449.2, 9393.94);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (69, 'вешалка напольная', 40, '54.3x13.7x58.5', 5543.68, 3941.23);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (70, 'антистеплер', 5, '12.3x21.6x29.8', 1163.15, 8372.4);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (71, 'точилка машинка', 35, '73.9x13.3x74.7', 5271.59, 9712.17);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (72, 'набор ручек синих', 8, '23.1x74.8x64.7', 64.56, 8823.73);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (73, 'зажимы', 23, '40.1x21.2x60.5', 5180.91, 1359.76);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (74, 'калькулятор карманный', 57, '49.4x57.7x11.8', 7584.2, 1122.68);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (75, 'конференц-столы', 60, '67.8x43.9x70.2', 2058.67, 5722.18);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (76, 'папка-органайзер', 61, '41.8x56.8x57.0', 9418.4, 6282.31);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (77, 'папка архивная', 45, '50.6x43.6x62.5', 6762.82, 4004.29);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (78, 'калькулятор научный', 87, '28.4x47.8x71.2', 8469.91, 7060.6);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (79, 'зеркало', 81, '25.5x46.8x31.7', 8489.8, 2390.69);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (80, 'кисточка белка 2', 69, '16.8x29.2x32.6', 9738.88, 4600.72);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (81, 'дырокол настрольный', 9, '17.2x40.7x62.2', 9350.51, 1335.77);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (82, 'офисные перегородки', 14, '60.0x35.6x48.3', 4953.97, 9045.64);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (83, 'стелажи архивные', 86, '69.1x18.0x16.9', 2417.76, 8623.15);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (84, 'конференц-кресло', 78, '19.7x28.5x60.2', 7609.66, 4542.7);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (85, 'ранец школьный', 75, '26.8x50.5x32.2', 8009.13, 1394.14);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (86, 'бейджик', 84, '26.3x29.1x34.2', 791.17, 8589.51);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (87, 'боксы пластиковые', 17, '58.2x72.8x18.8', 3034.1, 6231.12);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (88, 'стикеры', 75, '21.1x61.8x66.5', 1940.35, 5414.54);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (89, 'зеркало', 6, '49.3x28.9x27.5', 5249.3, 4428.52);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (90, 'проектор', 24, '70.5x64.6x17.9', 8558.31, 6002.57);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (91, 'зеркало', 45, '22.7x64.3x75.5', 1256.1, 3363.33);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (92, 'кабины акустические', 91, '17.6x44.4x30.8', 1106.85, 9068.37);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (93, 'папка архивная', 67, '14.7x75.2x45.6', 5717.25, 3481.55);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (94, 'лотки горизонтальные', 27, '69.3x26.8x46.6', 6316.44, 2837.17);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (95, ' набор ручек цветных', 56, '11.7x50.7x42.7', 4928.35, 4420.99);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (96, 'офисные перегородки', 19, '50.6x71.8x41.0', 3008.4, 3594.58);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (97, 'краски гуаш', 44, '39.6x34.2x24.3', 5021.55, 4970.98);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (98, 'папка архивная', 58, '34.4x22.9x64.0', 8485.72, 3145.87);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (99, 'лотки горизонтальные', 4, '46.9x13.1x32.4', 4174.57, 6808.37);
+INSERT INTO "item" ("id", "product", "article", "dimensions", "weight", "price") VALUES (100, 'медаль', 57, '13.3x11.9x42.8', 8128.14, 602.86);
+
+
+
+
+INSERT INTO "site" ("id", "date_create") VALUES (1, '2023-05-09');
+INSERT INTO "site" ("id", "date_create") VALUES (2, '2023-04-05');
+INSERT INTO "site" ("id", "date_create") VALUES (3, '2023-07-26');
+INSERT INTO "site" ("id", "date_create") VALUES (4, '2023-09-15');
+INSERT INTO "site" ("id", "date_create") VALUES (5, '2023-12-05');
+INSERT INTO "site" ("id", "date_create") VALUES (6, '2023-07-18');
+INSERT INTO "site" ("id", "date_create") VALUES (7, '2023-06-03');
+INSERT INTO "site" ("id", "date_create") VALUES (8, '2023-11-01');
+INSERT INTO "site" ("id", "date_create") VALUES (9, '2023-03-09');
+INSERT INTO "site" ("id", "date_create") VALUES (10, '2023-05-15');
+INSERT INTO "site" ("id", "date_create") VALUES (11, '2023-04-30');
+INSERT INTO "site" ("id", "date_create") VALUES (12, '2023-05-01');
+INSERT INTO "site" ("id", "date_create") VALUES (13, '2023-01-28');
+INSERT INTO "site" ("id", "date_create") VALUES (14, '2023-03-29');
+INSERT INTO "site" ("id", "date_create") VALUES (15, '2023-03-08');
+INSERT INTO "site" ("id", "date_create") VALUES (16, '2023-11-07');
+INSERT INTO "site" ("id", "date_create") VALUES (17, '2023-09-14');
+INSERT INTO "site" ("id", "date_create") VALUES (18, '2023-04-22');
+INSERT INTO "site" ("id", "date_create") VALUES (19, '2023-05-01');
+INSERT INTO "site" ("id", "date_create") VALUES (20, '2023-07-13');
+INSERT INTO "site" ("id", "date_create") VALUES (21, '2023-07-27');
+INSERT INTO "site" ("id", "date_create") VALUES (22, '2023-08-25');
+INSERT INTO "site" ("id", "date_create") VALUES (23, '2023-10-25');
+INSERT INTO "site" ("id", "date_create") VALUES (24, '2023-06-11');
+INSERT INTO "site" ("id", "date_create") VALUES (25, '2023-04-13');
+INSERT INTO "site" ("id", "date_create") VALUES (26, '2023-10-04');
+INSERT INTO "site" ("id", "date_create") VALUES (27, '2023-09-08');
+INSERT INTO "site" ("id", "date_create") VALUES (28, '2023-12-11');
+INSERT INTO "site" ("id", "date_create") VALUES (29, '2023-09-09');
+INSERT INTO "site" ("id", "date_create") VALUES (30, '2023-10-20');
+INSERT INTO "site" ("id", "date_create") VALUES (31, '2023-02-20');
+INSERT INTO "site" ("id", "date_create") VALUES (32, '2023-04-11');
+INSERT INTO "site" ("id", "date_create") VALUES (33, '2023-11-27');
+INSERT INTO "site" ("id", "date_create") VALUES (34, '2023-01-06');
+INSERT INTO "site" ("id", "date_create") VALUES (35, '2023-12-30');
+INSERT INTO "site" ("id", "date_create") VALUES (36, '2023-09-21');
+INSERT INTO "site" ("id", "date_create") VALUES (37, '2023-11-25');
+INSERT INTO "site" ("id", "date_create") VALUES (38, '2023-05-29');
+INSERT INTO "site" ("id", "date_create") VALUES (39, '2023-09-26');
+INSERT INTO "site" ("id", "date_create") VALUES (40, '2023-06-10');
+INSERT INTO "site" ("id", "date_create") VALUES (41, '2023-10-16');
+INSERT INTO "site" ("id", "date_create") VALUES (42, '2023-05-17');
+INSERT INTO "site" ("id", "date_create") VALUES (43, '2023-04-29');
+INSERT INTO "site" ("id", "date_create") VALUES (44, '2023-04-29');
+INSERT INTO "site" ("id", "date_create") VALUES (45, '2023-04-12');
+INSERT INTO "site" ("id", "date_create") VALUES (46, '2023-06-27');
+INSERT INTO "site" ("id", "date_create") VALUES (47, '2023-04-05');
+INSERT INTO "site" ("id", "date_create") VALUES (48, '2023-09-25');
+INSERT INTO "site" ("id", "date_create") VALUES (49, '2023-02-11');
+INSERT INTO "site" ("id", "date_create") VALUES (50, '2023-04-10');
+INSERT INTO "site" ("id", "date_create") VALUES (51, '2023-10-30');
+INSERT INTO "site" ("id", "date_create") VALUES (52, '2023-02-21');
+INSERT INTO "site" ("id", "date_create") VALUES (53, '2023-07-03');
+INSERT INTO "site" ("id", "date_create") VALUES (54, '2023-07-11');
+INSERT INTO "site" ("id", "date_create") VALUES (55, '2023-07-02');
+INSERT INTO "site" ("id", "date_create") VALUES (56, '2023-01-03');
+INSERT INTO "site" ("id", "date_create") VALUES (57, '2023-10-05');
+INSERT INTO "site" ("id", "date_create") VALUES (58, '2023-04-30');
+INSERT INTO "site" ("id", "date_create") VALUES (59, '2023-03-26');
+INSERT INTO "site" ("id", "date_create") VALUES (60, '2023-03-20');
+INSERT INTO "site" ("id", "date_create") VALUES (61, '2023-04-14');
+INSERT INTO "site" ("id", "date_create") VALUES (62, '2023-03-09');
+INSERT INTO "site" ("id", "date_create") VALUES (63, '2023-10-16');
+INSERT INTO "site" ("id", "date_create") VALUES (64, '2023-11-05');
+INSERT INTO "site" ("id", "date_create") VALUES (65, '2023-05-24');
+INSERT INTO "site" ("id", "date_create") VALUES (66, '2023-02-02');
+INSERT INTO "site" ("id", "date_create") VALUES (67, '2023-06-22');
+INSERT INTO "site" ("id", "date_create") VALUES (68, '2023-07-23');
+INSERT INTO "site" ("id", "date_create") VALUES (69, '2023-09-22');
+INSERT INTO "site" ("id", "date_create") VALUES (70, '2023-01-13');
+INSERT INTO "site" ("id", "date_create") VALUES (71, '2023-12-27');
+INSERT INTO "site" ("id", "date_create") VALUES (72, '2023-07-08');
+INSERT INTO "site" ("id", "date_create") VALUES (73, '2023-03-28');
+INSERT INTO "site" ("id", "date_create") VALUES (74, '2023-01-29');
+INSERT INTO "site" ("id", "date_create") VALUES (75, '2023-03-29');
+INSERT INTO "site" ("id", "date_create") VALUES (76, '2023-04-09');
+INSERT INTO "site" ("id", "date_create") VALUES (77, '2023-10-20');
+INSERT INTO "site" ("id", "date_create") VALUES (78, '2023-12-19');
+INSERT INTO "site" ("id", "date_create") VALUES (79, '2023-05-13');
+INSERT INTO "site" ("id", "date_create") VALUES (80, '2023-10-28');
+INSERT INTO "site" ("id", "date_create") VALUES (81, '2023-12-06');
+INSERT INTO "site" ("id", "date_create") VALUES (82, '2023-01-21');
+INSERT INTO "site" ("id", "date_create") VALUES (83, '2023-11-17');
+INSERT INTO "site" ("id", "date_create") VALUES (84, '2023-10-25');
+INSERT INTO "site" ("id", "date_create") VALUES (85, '2023-09-25');
+INSERT INTO "site" ("id", "date_create") VALUES (86, '2023-06-07');
+INSERT INTO "site" ("id", "date_create") VALUES (87, '2023-01-20');
+INSERT INTO "site" ("id", "date_create") VALUES (88, '2023-10-25');
+INSERT INTO "site" ("id", "date_create") VALUES (89, '2023-06-10');
+INSERT INTO "site" ("id", "date_create") VALUES (90, '2023-04-04');
+INSERT INTO "site" ("id", "date_create") VALUES (91, '2023-06-27');
+INSERT INTO "site" ("id", "date_create") VALUES (92, '2023-12-22');
+INSERT INTO "site" ("id", "date_create") VALUES (93, '2023-09-26');
+INSERT INTO "site" ("id", "date_create") VALUES (94, '2023-12-16');
+INSERT INTO "site" ("id", "date_create") VALUES (95, '2023-02-11');
+INSERT INTO "site" ("id", "date_create") VALUES (96, '2023-01-16');
+INSERT INTO "site" ("id", "date_create") VALUES (97, '2023-02-06');
+INSERT INTO "site" ("id", "date_create") VALUES (98, '2023-12-10');
+INSERT INTO "site" ("id", "date_create") VALUES (99, '2023-04-12');
+INSERT INTO "site" ("id", "date_create") VALUES (100, '2023-02-12');
+
+
+
+
+
+
+
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (1, 27, '1988-08-06 18:48:20.803669', '2-Собирается на складе', 1836.43, 'безналичный', 'неоплачен', 3, 2, 84, 3, 3, 91);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (2, 27, '1970-05-17 17:18:36.694731', '3-Сформирован', 3193.47, 'безналичный', 'оплачен', 8, 4, 53, 8, 2, 69);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (3, 57, '1970-01-17 18:53:25.567392', '0-Черновик', 955.89, 'наличный', 'неоплачен', 1, 4, 97, 4, 3, 79);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (4, 99, '2021-10-24 18:16:14.810834', '3-Сформирован', 3275.24, 'наличный', 'неоплачен', 10, 5, 43, 4, 1, 15);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (5, 95, '1995-03-06 08:56:26.267244', '1-Подтверждён', 5455.16, 'наличный', 'неоплачен', 9, 3, 44, 10, 4, 97);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (6, 34, '2010-07-29 15:25:54.711714', '1-Подтверждён', 8195.31, 'наличный', 'неоплачен', 5, 5, 40, 2, 5, 39);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (7, 86, '2000-08-11 14:14:59.755030', '2-Собирается на складе', 5364.85, 'наличный', 'неоплачен', 7, 3, 54, 3, 1, 28);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (8, 17, '2020-05-31 00:20:06.634634', '7-Отгружен и оплачен', 1956.75, 'безналичный', 'оплачен', 4, 1, 98, 2, 5, 42);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (9, 74, '1971-10-14 18:46:38.338274', '0-Черновик', 6372.11, 'безналичный', 'оплачен', 9, 2, 42, 2, 5, 49);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (10, 92, '2010-11-18 20:54:39.161414', '5-Передан в доставку', 8534.32, 'наличный', 'неоплачен', 7, 2, 71, 8, 5, 1);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (11, 3, '1975-12-11 19:30:23.285955', '1-Подтверждён', 7403.75, 'безналичный', 'отменен', 1, 3, 94, 6, 2, 28);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (12, 36, '1991-07-21 06:29:29.345704', '7-Отгружен и оплачен', 866.3, 'безналичный', 'оплачен', 3, 3, 40, 6, 1, 4);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (13, 64, '1975-09-06 00:16:05.791558', '0-Черновик', 1247.77, 'наличный', 'отменен', 4, 5, 100, 7, 5, 93);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (14, 25, '2000-12-16 23:56:23.580350', '0-Черновик', 3882.23, 'наличный', 'отменен', 1, 4, 81, 7, 2, 83);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (15, 45, '2018-03-04 23:40:37.244155', '4-Подготовлен к самовывозу', 9711.9, 'наличный', 'оплачен', 2, 5, 87, 9, 3, 25);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (16, 62, '1994-05-23 16:10:41.743474', '6-Отказа от заказа', 682.94, 'наличный', 'отменен', 6, 1, 60, 4, 5, 43);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (17, 61, '2013-08-18 11:55:23.045885', '5-Передан в доставку', 4374.79, 'безналичный', 'неоплачен', 10, 2, 57, 6, 4, 48);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (18, 98, '1986-07-11 01:47:37.544658', '7-Отгружен и оплачен', 4266.1, 'безналичный', 'отменен', 9, 1, 43, 4, 3, 17);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (19, 9, '2006-06-14 17:57:53.036626', '2-Собирается на складе', 8897.89, 'наличный', 'отменен', 10, 4, 59, 5, 2, 33);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (20, 50, '1986-02-08 23:25:00.378668', '1-Подтверждён', 129.24, 'безналичный', 'оплачен', 9, 4, 66, 8, 5, 73);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (21, 61, '1978-02-03 15:02:45.980980', '5-Передан в доставку', 7033.55, 'наличный', 'отменен', 9, 1, 45, 10, 2, 87);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (22, 82, '2010-09-12 13:34:07.263145', '1-Подтверждён', 7355.9, 'безналичный', 'неоплачен', 8, 2, 17, 1, 4, 68);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (23, 15, '2018-12-31 14:32:06.586878', '7-Отгружен и оплачен', 4571.69, 'безналичный', 'неоплачен', 6, 3, 78, 1, 3, 92);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (24, 60, '2022-05-07 04:30:51.850355', '6-Отказа от заказа', 1974.86, 'наличный', 'неоплачен', 8, 4, 49, 6, 5, 12);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (25, 78, '1996-04-23 12:11:44.675392', '7-Отгружен и оплачен', 938.47, 'безналичный', 'оплачен', 1, 1, 9, 2, 1, 80);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (26, 47, '1987-08-14 21:25:20.040506', '0-Черновик', 9378.7, 'безналичный', 'отменен', 7, 1, 74, 10, 2, 3);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (27, 67, '1996-10-10 23:13:29.972450', '0-Черновик', 1648.88, 'безналичный', 'неоплачен', 6, 3, 54, 1, 5, 79);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (28, 21, '2004-11-15 23:30:15.580725', '5-Передан в доставку', 2739.77, 'безналичный', 'отменен', 3, 3, 97, 7, 5, 32);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (29, 17, '2011-09-28 19:03:32.316517', '7-Отгружен и оплачен', 8995.19, 'наличный', 'отменен', 6, 3, 94, 2, 1, 86);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (30, 32, '2000-12-04 22:57:28.879876', '3-Сформирован', 6400.57, 'наличный', 'оплачен', 1, 5, 13, 7, 3, 44);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (31, 73, '1983-04-11 06:52:28.208504', '5-Передан в доставку', 8282.81, 'наличный', 'оплачен', 7, 3, 44, 4, 3, 17);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (32, 47, '2017-07-05 17:32:46.116786', '3-Сформирован', 1928.6, 'наличный', 'оплачен', 6, 1, 86, 8, 1, 8);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (33, 75, '1981-03-28 06:32:02.763019', '7-Отгружен и оплачен', 6695.89, 'наличный', 'неоплачен', 2, 1, 92, 4, 5, 77);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (34, 66, '1978-02-09 04:31:58.424812', '2-Собирается на складе', 3289.89, 'безналичный', 'отменен', 9, 3, 52, 4, 1, 43);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (35, 64, '1973-06-25 20:26:06.910669', '1-Подтверждён', 7624.45, 'наличный', 'отменен', 7, 2, 75, 6, 4, 1);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (36, 65, '2013-09-01 20:17:20.891708', '1-Подтверждён', 7913.7, 'безналичный', 'оплачен', 3, 4, 32, 7, 1, 35);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (37, 17, '1985-05-21 07:04:06.491473', '7-Отгружен и оплачен', 8370.69, 'безналичный', 'оплачен', 6, 2, 35, 9, 1, 19);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (38, 38, '2011-09-28 05:43:32.727229', '7-Отгружен и оплачен', 9997.21, 'наличный', 'оплачен', 2, 2, 88, 5, 1, 86);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (39, 19, '1990-01-23 02:36:07.630217', '5-Передан в доставку', 3190.67, 'безналичный', 'оплачен', 2, 4, 15, 2, 1, 47);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (40, 82, '2006-02-11 20:27:18.400671', '4-Подготовлен к самовывозу', 3047.34, 'наличный', 'отменен', 4, 2, 22, 9, 5, 65);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (41, 20, '1978-06-10 10:17:32.752782', '3-Сформирован', 2651.21, 'наличный', 'оплачен', 6, 2, 10, 8, 2, 28);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (42, 47, '2011-02-09 10:26:39.239822', '0-Черновик', 4112.7, 'безналичный', 'оплачен', 3, 5, 92, 8, 1, 24);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (43, 47, '1979-04-11 18:27:01.891321', '3-Сформирован', 8809.86, 'наличный', 'отменен', 5, 3, 92, 9, 3, 100);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (44, 16, '1983-12-07 04:57:02.627449', '4-Подготовлен к самовывозу', 8674.85, 'наличный', 'отменен', 10, 4, 91, 8, 3, 85);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (45, 59, '2020-06-13 21:14:11.625742', '4-Подготовлен к самовывозу', 6717.1, 'безналичный', 'оплачен', 9, 1, 19, 10, 1, 24);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (46, 70, '1972-03-09 08:38:13.374999', '6-Отказа от заказа', 2683.66, 'наличный', 'неоплачен', 7, 5, 41, 2, 2, 19);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (47, 12, '2018-08-15 11:40:09.175046', '3-Сформирован', 3721.71, 'безналичный', 'неоплачен', 7, 2, 64, 3, 3, 63);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (48, 41, '1991-07-15 09:32:53.878542', '7-Отгружен и оплачен', 1935.45, 'безналичный', 'отменен', 7, 5, 85, 8, 2, 15);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (49, 47, '2007-04-24 01:17:18.150476', '3-Сформирован', 6275.86, 'безналичный', 'отменен', 6, 4, 6, 6, 2, 81);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (50, 25, '2017-01-13 18:34:52.814528', '4-Подготовлен к самовывозу', 1015.88, 'безналичный', 'оплачен', 2, 5, 79, 5, 4, 61);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (51, 15, '2001-03-04 07:03:41.989605', '6-Отказа от заказа', 9610.23, 'безналичный', 'оплачен', 9, 2, 12, 6, 1, 64);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (52, 13, '1994-08-22 21:55:25.262478', '4-Подготовлен к самовывозу', 3701.0, 'наличный', 'неоплачен', 5, 4, 26, 10, 2, 18);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (53, 10, '2012-06-20 01:10:57.663320', '6-Отказа от заказа', 9723.29, 'безналичный', 'неоплачен', 2, 4, 23, 2, 5, 14);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (54, 46, '2012-09-11 03:25:19.800451', '0-Черновик', 9200.38, 'наличный', 'оплачен', 9, 2, 67, 8, 4, 71);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (55, 68, '2001-06-17 21:23:18.496163', '7-Отгружен и оплачен', 3738.12, 'наличный', 'неоплачен', 10, 5, 17, 8, 4, 28);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (56, 74, '2012-03-08 02:10:11.031782', '4-Подготовлен к самовывозу', 1661.89, 'безналичный', 'неоплачен', 8, 1, 10, 2, 2, 45);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (57, 7, '2008-09-11 20:31:16.055630', '0-Черновик', 2901.31, 'наличный', 'отменен', 2, 4, 18, 3, 5, 25);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (58, 5, '2022-07-21 08:38:35.348722', '0-Черновик', 3467.67, 'наличный', 'оплачен', 1, 5, 44, 10, 5, 37);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (59, 85, '2000-08-18 12:37:53.379118', '2-Собирается на складе', 2593.1, 'безналичный', 'неоплачен', 8, 4, 58, 3, 5, 11);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (60, 99, '1993-07-31 11:05:29.272179', '3-Сформирован', 1318.24, 'наличный', 'оплачен', 1, 5, 80, 5, 4, 84);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (61, 65, '2001-08-13 01:39:24.047533', '6-Отказа от заказа', 5255.5, 'наличный', 'оплачен', 8, 2, 51, 7, 2, 18);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (62, 69, '1978-01-28 01:35:00.523153', '7-Отгружен и оплачен', 9400.13, 'безналичный', 'неоплачен', 8, 4, 64, 4, 2, 69);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (63, 40, '2006-01-06 05:40:37.305190', '4-Подготовлен к самовывозу', 9051.8, 'наличный', 'отменен', 2, 3, 18, 9, 2, 37);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (64, 97, '1971-05-16 00:11:19.660864', '4-Подготовлен к самовывозу', 9958.73, 'безналичный', 'оплачен', 1, 4, 49, 2, 1, 21);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (65, 86, '1977-03-01 16:58:08.434055', '0-Черновик', 8265.82, 'наличный', 'оплачен', 4, 1, 84, 8, 4, 90);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (66, 45, '1988-08-08 18:59:02.932582', '6-Отказа от заказа', 6913.94, 'наличный', 'неоплачен', 6, 3, 35, 8, 3, 7);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (67, 7, '2020-03-14 05:00:24.432668', '5-Передан в доставку', 9444.26, 'безналичный', 'отменен', 2, 3, 7, 8, 5, 27);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (68, 25, '1998-12-12 20:09:26.607232', '4-Подготовлен к самовывозу', 1311.23, 'безналичный', 'отменен', 8, 2, 20, 5, 1, 12);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (69, 7, '1983-12-27 04:25:14.731057', '6-Отказа от заказа', 7824.11, 'наличный', 'отменен', 7, 1, 57, 2, 5, 47);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (70, 53, '2003-09-17 11:21:37.083087', '7-Отгружен и оплачен', 4799.35, 'безналичный', 'неоплачен', 5, 4, 30, 4, 3, 18);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (71, 71, '1976-07-28 16:30:59.518970', '4-Подготовлен к самовывозу', 8805.34, 'безналичный', 'неоплачен', 7, 2, 4, 6, 2, 29);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (72, 42, '2016-01-24 04:59:07.438326', '5-Передан в доставку', 3215.1, 'наличный', 'отменен', 4, 3, 93, 7, 2, 81);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (73, 2, '2023-09-14 08:23:57.670075', '4-Подготовлен к самовывозу', 163.3, 'безналичный', 'оплачен', 8, 5, 25, 5, 3, 84);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (74, 40, '1984-05-21 01:21:38.277951', '0-Черновик', 6210.8, 'безналичный', 'отменен', 1, 3, 75, 6, 3, 75);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (75, 42, '2020-02-12 09:41:42.172661', '5-Передан в доставку', 6099.15, 'безналичный', 'оплачен', 1, 4, 77, 4, 3, 76);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (76, 66, '1972-12-27 09:14:44.113301', '4-Подготовлен к самовывозу', 4729.99, 'безналичный', 'неоплачен', 10, 1, 29, 3, 3, 35);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (77, 74, '1972-06-13 07:26:43.765068', '5-Передан в доставку', 1804.48, 'наличный', 'оплачен', 8, 5, 35, 1, 2, 16);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (78, 96, '1997-05-30 19:20:01.818278', '3-Сформирован', 188.94, 'безналичный', 'неоплачен', 7, 1, 12, 7, 3, 51);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (79, 24, '1983-09-27 12:35:12.919440', '2-Собирается на складе', 1981.75, 'безналичный', 'оплачен', 9, 4, 77, 8, 4, 65);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (80, 92, '1978-01-10 19:35:24.081485', '5-Передан в доставку', 2359.95, 'безналичный', 'отменен', 6, 1, 7, 8, 3, 39);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (81, 91, '1973-03-13 06:48:03.611024', '2-Собирается на складе', 5395.8, 'наличный', 'неоплачен', 8, 5, 29, 5, 2, 62);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (82, 18, '2018-12-02 08:40:52.442809', '1-Подтверждён', 5878.77, 'безналичный', 'оплачен', 1, 5, 55, 9, 3, 34);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (83, 10, '2007-04-18 17:54:06.847312', '0-Черновик', 9508.83, 'безналичный', 'отменен', 7, 4, 3, 6, 3, 37);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (84, 9, '1992-09-21 08:31:13.185168', '6-Отказа от заказа', 3086.92, 'наличный', 'оплачен', 8, 1, 55, 4, 4, 23);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (85, 50, '1979-02-16 03:43:39.164088', '6-Отказа от заказа', 9481.17, 'безналичный', 'отменен', 5, 3, 20, 1, 2, 90);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (86, 63, '1997-11-04 18:59:03.866330', '2-Собирается на складе', 6573.82, 'безналичный', 'отменен', 5, 2, 46, 7, 1, 63);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (87, 24, '2016-08-21 03:33:43.224447', '7-Отгружен и оплачен', 2802.0, 'наличный', 'неоплачен', 7, 5, 83, 10, 2, 87);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (88, 69, '2013-06-26 22:20:23.915181', '2-Собирается на складе', 5649.75, 'безналичный', 'отменен', 9, 2, 22, 5, 3, 10);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (89, 22, '1970-11-17 22:17:25.211946', '0-Черновик', 3318.48, 'наличный', 'оплачен', 5, 2, 7, 7, 3, 41);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (90, 93, '1988-03-01 03:15:45.532798', '4-Подготовлен к самовывозу', 693.57, 'безналичный', 'отменен', 6, 2, 95, 7, 5, 17);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (91, 83, '2009-05-24 18:44:19.468204', '7-Отгружен и оплачен', 5028.21, 'наличный', 'отменен', 7, 1, 36, 10, 5, 29);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (92, 50, '1986-03-05 11:54:44.232558', '5-Передан в доставку', 7842.44, 'безналичный', 'оплачен', 6, 2, 52, 5, 5, 91);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (93, 56, '1981-10-10 14:06:27.825776', '6-Отказа от заказа', 9660.9, 'безналичный', 'отменен', 7, 1, 45, 2, 5, 57);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (94, 3, '2020-02-15 05:52:34.525656', '1-Подтверждён', 369.32, 'наличный', 'оплачен', 3, 2, 24, 6, 5, 20);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (95, 12, '2012-08-30 06:30:13.185007', '4-Подготовлен к самовывозу', 2315.84, 'безналичный', 'отменен', 6, 3, 21, 7, 2, 31);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (96, 81, '1978-10-06 15:14:38.493163', '6-Отказа от заказа', 3780.82, 'безналичный', 'неоплачен', 7, 3, 42, 8, 5, 18);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (97, 44, '2015-08-11 19:55:11.744419', '2-Собирается на складе', 6585.82, 'наличный', 'неоплачен', 2, 4, 79, 5, 3, 12);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (98, 6, '2002-04-08 03:37:49.962484', '0-Черновик', 3177.43, 'безналичный', 'отменен', 6, 1, 50, 6, 4, 40);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (99, 17, '1979-06-22 04:06:42.829698', '7-Отгружен и оплачен', 6944.94, 'безналичный', 'неоплачен', 6, 5, 76, 5, 1, 29);
+INSERT INTO "order" ("id", "client_id", "date_order", "status_order", "order_amount", "payment_type", "payment_status", "call_id", "letter_id", "delivery_id", "responsible_id", "sms_id", "site_id") VALUES (100, 12, '1977-05-24 11:10:46.705275', '7-Отгружен и оплачен', 8611.6, 'наличный', 'отменен', 8, 3, 85, 3, 2, 16);
+
+
+
+
+
+
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (1, 51, 1973.16, 48);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (2, 78, 2683.7, 41);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (3, 25, 218.6, 27);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (4, 99, 6668.5, 83);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (5, 93, 3391.32, 60);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (6, 14, 6152.24, 13);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (7, 87, 6007.35, 97);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (8, 65, 3214.6, 67);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (9, 31, 7430.8, 92);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (10, 36, 5999.34, 62);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (11, 6, 245.4, 75);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (12, 94, 6403.7, 3);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (13, 58, 9809.73, 55);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (14, 80, 1033.18, 62);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (15, 63, 5962.79, 70);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (16, 44, 430.11, 72);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (17, 3, 1129.99, 90);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (18, 16, 75.65, 27);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (19, 67, 5841.93, 27);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (20, 66, 6932.26, 23);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (21, 83, 7668.38, 87);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (22, 97, 3349.91, 77);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (23, 79, 4949.47, 94);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (24, 84, 3123.97, 87);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (25, 1, 8298.85, 79);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (26, 37, 5896.71, 91);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (27, 43, 6196.84, 2);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (28, 7, 2595.59, 72);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (29, 76, 8189.98, 1);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (30, 62, 6136.42, 91);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (31, 71, 2827.13, 91);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (32, 34, 2831.9, 69);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (33, 91, 1034.28, 29);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (34, 93, 2867.8, 35);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (35, 96, 4754.3, 7);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (36, 38, 7609.58, 9);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (37, 92, 1587.2, 24);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (38, 25, 4318.56, 99);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (39, 92, 504.11, 27);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (40, 41, 4532.52, 71);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (41, 41, 2930.18, 31);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (42, 91, 9102.7, 99);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (43, 74, 5625.87, 59);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (44, 47, 3029.17, 96);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (45, 37, 7000.99, 94);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (46, 42, 771.47, 99);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (47, 87, 2839.35, 1);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (48, 58, 9170.36, 21);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (49, 66, 6402.41, 37);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (50, 88, 952.65, 64);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (51, 64, 8712.21, 80);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (52, 24, 8637.34, 85);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (53, 79, 9349.51, 39);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (54, 83, 5433.75, 51);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (55, 53, 5910.2, 41);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (56, 82, 994.23, 26);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (57, 97, 1068.3, 35);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (58, 40, 8480.21, 4);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (59, 19, 3397.43, 72);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (60, 49, 8287.33, 84);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (61, 78, 2199.81, 65);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (62, 83, 9741.57, 13);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (63, 100, 2993.93, 24);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (64, 2, 7381.47, 78);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (65, 78, 6244.7, 5);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (66, 47, 8632.18, 73);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (67, 91, 2392.26, 9);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (68, 18, 8215.13, 42);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (69, 44, 65.5, 60);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (70, 36, 1736.72, 81);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (71, 18, 2161.7, 39);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (72, 63, 7574.9, 22);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (73, 81, 4052.41, 41);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (74, 52, 3423.94, 66);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (75, 64, 3752.77, 52);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (76, 64, 3675.3, 89);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (77, 54, 3727.28, 67);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (78, 45, 7795.88, 25);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (79, 58, 720.51, 69);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (80, 94, 3332.63, 70);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (81, 41, 4795.69, 79);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (82, 51, 7377.63, 73);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (83, 48, 8138.22, 69);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (84, 61, 9622.88, 69);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (85, 9, 1339.37, 76);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (86, 71, 8990.21, 90);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (87, 54, 9449.21, 89);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (88, 94, 126.13, 6);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (89, 87, 3617.3, 68);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (90, 82, 6979.76, 36);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (91, 26, 1602.1, 19);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (92, 40, 1500.64, 76);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (93, 39, 8733.8, 27);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (94, 4, 3183.22, 39);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (95, 32, 4625.43, 35);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (96, 15, 3006.75, 51);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (97, 63, 9971.66, 93);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (98, 5, 8661.9, 60);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (99, 48, 3684.6, 67);
+INSERT INTO "order_items" ("id", "order_id", "quantity", "items_id") VALUES (100, 89, 624.51, 38);
+
+
+Переименовать таблицы (чтобы избежать необходимости маскировать двойные ковычки)
+
+ALTER TABLE "order" 
+    RENAME TO orders
+
+ALTER TABLE "item" 
+    RENAME TO items
+
+ALTER TABLE "client" 
+    RENAME TO clients
+
+
+
+Рабочий запрос №1:
+SELECT to_char(orders.date_order, 'Month') AS mes, SUM(orders.order_amount) AS income, COUNT(orders.order_amount) AS quantity
+            FROM orders
+            WHERE EXTRACT(MONTH FROM orders.date_order) BETWEEN 1 AND 12
+            GROUP BY mes
+            ORDER BY (MIN(orders.date_order))
+
+Рабочий запрос №2:
+SELECT SUM(items.weight), to_char(orders.date_order, 'Month') AS mes
+FROM items
+join order_items ON items.id=order_items.items_id
+join orders ON orders.id=order_items.order_id
+WHERE EXTRACT(MONTH FROM orders.date_order) BETWEEN 1 AND 12
+GROUP BY mes
+ORDER BY (SUM(items.weight))
